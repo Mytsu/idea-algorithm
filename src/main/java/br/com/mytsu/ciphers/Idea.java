@@ -4,77 +4,74 @@ public class Idea {
     private static final int KEY_SIZE = 16;
     private static final int BLOCK_SIZE = 8;
     private static final int ROUNDS = 8;
-    private static final int MAX_RANGE = 0xFFFF;
     private boolean encrypt;
     private int[] subkey;
 
+    public Idea(byte[] key) {
+        this.encrypt = true;
+        this.setkey(key);
+    }
+
+    public Idea(byte[] key, boolean encrypt) {
+        this.encrypt = encrypt;
+        this.setkey(key);
+    }
+
     /**
-     * Seta a chave para encriptação, ou o inverso da chave para desencriptação
+     * Inverte as sub-chaves para obter as chaves de desencriptação Elas são
+     * inversas tanto aditivas quanto multiplicativas das sub-chaves de encriptação
+     * em ordem reversa.
      * 
      * @param key
+     * @return
      */
-    void setkey(byte[] key) {
-        int[] tempkey = this.generateSubKeys(key);
-        if (encrypt) subkey = tempkey;
-        else subkey = invertSubkey(tempkey);
-    }
-
     private static int[] invertSubkey(int[] key) {
-        int[] invSubkey = new int[key.length];
+        int[] invKey = new int[key.length];
         int p = 0;
         int i = ROUNDS * 6;
-        // para a última saída de transformação 
-        invSubkey[i]         = mulInv(key[p++]);
-        invSubkey[i + 1]     = addInv(key[p++]);
-        invSubkey[i + 2]     = addInv(key[p++]);
-        invSubkey[i + 3]     = mulInv(key[p++]);
-        // das rodadas de 8 a 2
-        for (int r = ROUNDS - 1; r > 0; r--) {
+        invKey[i + 0] = mulInv(key[p++]);
+        invKey[i + 1] = addInv(key[p++]);
+        invKey[i + 2] = addInv(key[p++]);
+        invKey[i + 3] = mulInv(key[p++]);
+        for (int r = ROUNDS - 1; r >= 0; r--) {
             i = r * 6;
-            invSubkey[i + 4] = key[p++];
-            invSubkey[i + 5] = key[p++];
-            invSubkey[i]     = mulInv(key[p++]); 
-            invSubkey[i + 2] = addInv(key[p++]); 
-            invSubkey[i + 1] = addInv(key[p++]); 
-            invSubkey[i + 3] = mulInv(key[p++]); 
+            int m = r > 0 ? 2 : 1;
+            int n = r > 0 ? 1 : 2;
+            invKey[i + 4] = key[p++];
+            invKey[i + 5] = key[p++];
+            invKey[i + 0] = mulInv(key[p++]);
+            invKey[i + m] = addInv(key[p++]);
+            invKey[i + n] = addInv(key[p++]);
+            invKey[i + 3] = mulInv(key[p++]);
         }
-        // Round 1
-        invSubkey[4]         = key[p++];
-        invSubkey[5]         = key[p++];
-        invSubkey[0]         = mulInv(key[p++]);
-        invSubkey[1]         = addInv(key[p++]);
-        invSubkey[2]         = addInv(key[p++]);
-        invSubkey[3]         = mulInv(key[p]);  
-        return invSubkey;
+        return invKey;
     }
 
     /**
-     * Adição, respeitando o tamanho de MAX_RANGE (mod 2^16)
-     * range [0, 0xFFFF].
+     * Adição, respeitando o tamanho de MAX_RANGE (mod 2^16) range [0, 0xFFFF].
      * 
      * @param x valor 1
      * @param y valor 2
      * @return resultado da soma com o módulo
      */
     private static int add(int x, int y) {
-        return (x + y) & MAX_RANGE;
+        return (x + y) & 0xFFFF;
     }
 
     /**
-     * Adição inversa, respeitando o tamanho de MAX_RANGE (mod 2^16)
-     * range [0, 0xFFFF].
+     * Adição inversa, respeitando o tamanho de MAX_RANGE (mod 2^16) range [0,
+     * 0xFFFF].
      * 
      * @param i entrada
      * @return resultado da soma inversa
      */
     private static int addInv(int i) {
-        return (0x10000 - i) & MAX_RANGE;
+        return (0x10000 - i) & 0xFFFF;
     }
 
     /**
-     * Multiplicação, respeitando o tamanho + 1
-     * (mod 2^16 + 1 = mod 0x10001).
-     * range [0, 0xFFFF]. 
+     * Multiplicação, respeitando o tamanho + 1 (mod 2^16 + 1 = mod 0x10001). range
+     * [0, 0xFFFF].
      * 
      * @param x entrada 1
      * @param y entrada 2
@@ -83,23 +80,22 @@ public class Idea {
     private static int mul(int x, int y) {
         long m = (long) x * y;
         if (m != 0) {
-            return (int) (m % 0x10001) & MAX_RANGE;
+            return (int) (m % 0x10001) & 0xFFFF;
         } else {
             if (x != 0 || y != 0) {
-                return (1 - x - y) & MAX_RANGE;
+                return (1 - x - y) & 0xFFFF;
             }
             return 1;
         }
     }
 
     /**
-     * Multiplicador inverso do grupo multiplicativo
-     * (mod 2^16+1). Ele utiliza o algoritmo extendido euclidiano
-     * (Veja: https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm)
-     * para encontrar o inverso. Para os propósitos do IDEA, os blocos zerados
-     * são considerados para representar 2^16 = -1 para a multiplicação
-     * do módulo 2^16 + 1; assim o inverso multiplicativo de 0 é 0.
-     * range [0, 0xFFFF].
+     * Multiplicador inverso do grupo multiplicativo (mod 2^16+1). Ele utiliza o
+     * algoritmo extendido euclidiano (Veja:
+     * https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm) para encontrar o
+     * inverso. Para os propósitos do IDEA, os blocos zerados são considerados para
+     * representar 2^16 = -1 para a multiplicação do módulo 2^16 + 1; assim o
+     * inverso multiplicativo de 0 é 0. range [0, 0xFFFF].
      * 
      * @param x entrada
      * @return inverso multiplicativo da entrada
@@ -115,7 +111,7 @@ public class Idea {
                 t1 += y / x * t0;
                 y %= x;
                 if (y == 1) {
-                    return (1 - t1) & MAX_RANGE;
+                    return (1 - t1) & 0xFFFF;
                 }
                 t0 += x / y * t1;
                 x %= y;
@@ -136,7 +132,11 @@ public class Idea {
      *         meia rodada)
      */
     private int[] generateSubKeys(byte[] inputkey) {
-        if (inputkey.length != KEY_SIZE) { throw new IllegalArgumentException(); }
+        if (inputkey.length != KEY_SIZE) {
+            System.err.println("Tamanho de chave inválido!");
+            System.err.println("Tamanho atual da chave: " + inputkey.length);
+            throw new IllegalArgumentException();
+        }
         int[] key = new int[ROUNDS * 6 + 4]; // Todas as sub-chaves necessárias
 
         // Dividindo a chave de 128-bits em oito blocos de 16-bits
@@ -145,16 +145,19 @@ public class Idea {
             key[i] = Utils.concat(inputkey[2 * i], inputkey[2 * i + 1]);
         }
 
-        // A chave é deslocada em 25 bits para a esquerda e novamente dividida em oito sub-chaves
+        // A chave é deslocada em 25 bits para a esquerda e novamente dividida em oito
+        // sub-chaves
         // As primeiras quatro são usadas na rodada 2, e as últimas quatro na rodada 3.
-        // A chave é deslocada em mais 25 bits para a esquerda para as próximas oito chaves,
-        //      e assim em diante.
+        // A chave é deslocada em mais 25 bits para a esquerda para as próximas oito
+        // chaves,
+        // e assim em diante.
         for (int i = inputkey.length / 2; i < key.length; i++) {
-            // Ele começa combinando k1 deslocado 9 bits com k2, isto é 16 bits de k0 + 9 bits
-            //      deslocados de k1 = 25 bits.
-            b1 = key[((i + 1) % BLOCK_SIZE) != 0 ? i - 7 : i - 15] << 9;
-            b2 = key[((i + 2) % BLOCK_SIZE) < 2 ? i - 14 : i - 6] >>> 7;
-            key[i] = (b1 | b2) & MAX_RANGE;
+            // Ele começa combinando k1 deslocado 9 bits com k2, isto é 16 bits de k0 + 9
+            // bits
+            // deslocados de k1 = 25 bits.
+            b1 = key[(i + 1) % 8 != 0 ? i - 7 : i - 15] << 9;
+            b2 = key[(i + 2) % 8 < 2 ? i - 14 : i - 6] >>> 7;
+            key[i] = (b1 | b2) & 0xFFFF;
         }
         return key;
     }
@@ -163,7 +166,7 @@ public class Idea {
      * Realiza a encriptação/desencriptação dos dados a partir da posição indicada
      * OBS: Não altera os dados originais de entrada
      * 
-     * @param data dados de entrada
+     * @param data   dados de entrada
      * @param offset posição de início do processo
      * @return dados encriptados/desencriptados
      */
@@ -210,6 +213,20 @@ public class Idea {
         out[offset + 6] = (byte) (r3 >> 8);
         out[offset + 7] = (byte) r3;
         return out;
+    }
+
+    /**
+     * Seta a chave para encriptação, ou o inverso da chave para desencriptação
+     * 
+     * @param key
+     */
+    void setkey(byte[] key) {
+        int[] tempkey = this.generateSubKeys(key);
+        if (this.encrypt) {
+            this.subkey = tempkey;
+        } else {
+            this.subkey = invertSubkey(tempkey);
+        }
     }
 
     /**

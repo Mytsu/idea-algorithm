@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - App",
+            "request": "launch",
+            "mainClass": "br.com.mytsu.apps.App",
+            "projectName": "idea-algorithm"
+        }
+    ]
+}

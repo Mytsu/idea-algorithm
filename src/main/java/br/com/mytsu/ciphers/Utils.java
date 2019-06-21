@@ -11,10 +11,11 @@ public class Utils {
      */
     public static byte[] makekey(String inputKey, int size) {
         byte[] key = new byte[size];
-        for (int j = 0; j < key.length; ++j) {
+        int i, j;
+        for (j = 0; j < key.length; ++j) {
             key[j] = 0;
         }
-        for (int i = 0, j = 0; i < inputKey.length(); i++, j = (j + 1) % key.length) {
+        for (i = 0, j = 0; i < inputKey.length(); i++, j = (j + 1) % key.length) {
             key[j] ^= (byte) inputKey.charAt(i);
         }
         return key;
