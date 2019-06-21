@@ -49,7 +49,7 @@ public class Idea {
     }
 
     /**
-     * Adição no grupo aditivo (mod 2^16)
+     * Adição, respeitando o tamanho de MAX_RANGE (mod 2^16)
      * range [0, 0xFFFF].
      * 
      * @param x valor 1
@@ -61,7 +61,7 @@ public class Idea {
     }
 
     /**
-     * Adição inversa no grupo aditivo (mod 2^16)
+     * Adição inversa, respeitando o tamanho de MAX_RANGE (mod 2^16)
      * range [0, 0xFFFF].
      * 
      * @param i entrada
@@ -72,7 +72,7 @@ public class Idea {
     }
 
     /**
-     * Multiplicação no grupo multiplicativo
+     * Multiplicação, respeitando o tamanho + 1
      * (mod 2^16 + 1 = mod 0x10001).
      * range [0, 0xFFFF]. 
      * 

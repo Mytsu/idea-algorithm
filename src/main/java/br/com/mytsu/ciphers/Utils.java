@@ -5,8 +5,8 @@ public class Utils {
     /**
      * Converte a chave de entrada para um vetor de bytes
      * 
-     * @param inputKey
-     * @param size
+     * @param inputKey chave de entrada
+     * @param size tamanho da chave
      * @return vetor de bytes gerado
      */
     public static byte[] makekey(String inputKey, int size) {
@@ -43,9 +43,9 @@ public class Utils {
     /**
      * Concatena 2 inteiros
      * 
-     * @param x 
-     * @param y
-     * @return 
+     * @param x valor 1
+     * @param y valor 2
+     * @return valores 1 e 2 concatenados (x | y)
      */
     public static int concat(int x, int y) {
         int b1 = (x & 0xFF) << 8;
@@ -56,9 +56,9 @@ public class Utils {
     /**
      * Concatena 2 vetores de bytes
      * 
-     * @param x
-     * @param y
-     * @return
+     * @param x vetor 1
+     * @param y vetor 2
+     * @return concatenação dos vetores (x | y)
      */
     public static byte[] concatArray(byte[] x, byte[] y) {
         byte[] out = new byte[x.length + y.length];
