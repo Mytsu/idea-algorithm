@@ -28,7 +28,7 @@ Aqui estão os quatorze passos para uma rodada completa (_multiplica_ significa 
 6. _Bitwise XOR_ dos resultados dos passos 2 e 4.
 7. _Multiplica_ o resultado do passo 5 e a quinta sub-chave _Z<sub>5</sub>_.
 8. _Soma_ os resultados dos passos 6 e 7.
-9. _Multiplica_ o resultado do passo 8 e a sexta sub-chave _Z<sub>6</sub>.
+9. _Multiplica_ o resultado do passo 8 e a sexta sub-chave _Z<sub>6</sub>_.
 10. _Soma_ os resultados dos passos 7 e 9.
 11. _Bitwise XOR_ dos resultados dos passos 1 e 9.
 12. _Bitwise XOR_ dos resultados dos passos 3 e 9.
